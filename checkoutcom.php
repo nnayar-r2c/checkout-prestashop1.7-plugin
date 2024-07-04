@@ -48,7 +48,7 @@ class CheckoutCom extends PaymentModule
     {
         $this->name = 'checkoutcom';
         $this->tab = 'payments_gateways';
-        $this->version = '2.3.7';
+        $this->version = '2.3.8';
         $this->author = 'Checkout.com';
         $this->need_instance = 1;
 
@@ -200,7 +200,7 @@ class CheckoutCom extends PaymentModule
             'languages' => $this->context->controller->getLanguages(),
             'order_states' => OrderState::getOrderStates($this->context->language->id),
             'trigger_statuses' =>  $triggerStatus ? json_decode($triggerStatus, true) : [],
-            'webhook_url' => $this->context->shop->getBaseURL().'index.php?fc=module&module=checkoutcom&controller=webhook',
+            'webhook_url' => $this->context->shop->getBaseURL(true).'index.php?fc=module&module=checkoutcom&controller=webhook',
         ]);
     }
 
@@ -257,30 +257,30 @@ class CheckoutCom extends PaymentModule
                                 "payment_void_declined", 
                                 "payment_voided" 
                            ], 
-                           "dispute" => [
-                                "dispute_canceled", 
-                                "dispute_evidence_required", 
-                                "dispute_expired", 
-                                "dispute_lost", 
-                                "dispute_resolved", 
-                                "dispute_won" 
-                            ], 
-                           "marketplace" => [
-                                "payments_disabled", 
-                                "payments_enabled", 
-                                "vmss_failed", 
-                                "vmss_passed", 
-                                "match_failed", 
-                                "match_passed", 
-                                "sub_entity_created" 
-                            ] 
+                        //    "dispute" => [
+                        //         "dispute_canceled", 
+                        //         "dispute_evidence_required", 
+                        //         "dispute_expired", 
+                        //         "dispute_lost", 
+                        //         "dispute_resolved", 
+                        //         "dispute_won" 
+                        //     ], 
+                        //    "marketplace" => [
+                        //         "payments_disabled", 
+                        //         "payments_enabled", 
+                        //         "vmss_failed", 
+                        //         "vmss_passed", 
+                        //         "match_failed", 
+                        //         "match_passed", 
+                        //         "sub_entity_created" 
+                        //     ] 
                         ] 
                     ] 
                 ], 
                "actions" => [
                     [
                         "type" => "webhook", 
-                        "url" => $this->context->shop->getBaseURL()."index.php?fc=module&module=checkoutcom&controller=webhook", 
+                        "url" => $this->context->shop->getBaseURL(true)."index.php?fc=module&module=checkoutcom&controller=webhook", 
                         "headers" => [
                             "Authorization" => $authorization_key
                         ], 

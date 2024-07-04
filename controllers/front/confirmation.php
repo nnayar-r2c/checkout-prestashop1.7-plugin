@@ -37,8 +37,27 @@ class CheckoutcomConfirmationModuleFrontController extends ModuleFrontController
         $status = 'Pending';
         $source_type = Tools::getValue('source');
 
+        //Recurring literals
+        $literal_order= '&id_order=';
+        $literal_confirmation = 'index.php?controller=order-confirmation&id_cart=';
+        $literal_module = '&id_module=';
+        $literal_key = '&key=';
+
         $cart = new Cart((int) $cart_id);
         $customer = new Customer((int) $cart->id_customer);
+
+        // Check if an order has already been placed using this cart by webhook fallback
+        $existingOrder = Order::getOrderByCartId($cart_id);
+        if ($existingOrder) {
+             $this->module->logger->info(
+                    'Channel Confirmation -- Existing order. Redirecting to thank you :',
+                    array('obj' => $existingOrder)
+                );
+             $module_id = $this->module->id;
+             Tools::redirect($literal_confirmation . (int) $cart->id . $literal_module . $module_id . $literal_order . $existingOrder . $literal_key . $secure_key);
+           
+        }
+
         if (Tools::isSubmit('cko-session-id') || strpos($secure_key, '?cko-session-id=') !== false) {
 
             if (Tools::isSubmit('cko-session-id')) {
@@ -170,16 +189,15 @@ class CheckoutcomConfirmationModuleFrontController extends ModuleFrontController
                     \PrestaShopLogger::addLog('Failed to add payment flag note to order.', 2, 0, 'CheckoutcomPlaceorderModuleFrontController' , $order->id, true);
                 }
 
-                Tools::redirect('index.php?controller=order-confirmation&id_cart=' . (int) $cart->id . '&id_module=' . $module_id . '&id_order=' . $order_id . '&key=' . $secure_key);
+                Tools::redirect($literal_confirmation . (int) $cart->id . $literal_module . $module_id . $literal_order . $order_id . $literal_key. $secure_key);
             }
             else{
                 //Add warning message on mismatching amounts
 
                 Utilities::addMessageToOrder($this->trans('⚠️ Total amount paid does not match the cart total. We recommend you do additional checks before shipping the order.', [], 'Modules.Checkoutcom.Confirmation.php'), $order);
                 $this->context->controller->errors[] = $this->trans('Only '.$response -> currency.' '.$paid.' has been paid towards the order. Please contact support.', [], 'Shop.Notifications.Error');
-                $this->redirectWithNotifications(__PS_BASE_URI__ . 'index.php?controller=order-confirmation&id_cart=' . (int) $cart->id . '&id_module=' . $module_id . '&id_order=' . $order_id . '&key=' . $secure_key);
-                // $this->redirectWithNotifications(__PS_BASE_URI__ . 'index.php?controller=order&step=1&key=' . $secure_key . '&id_cart='
-                // . (int) $cart_id);
+                $this->redirectWithNotifications(__PS_BASE_URI__ . $literal_confirmation . (int) $cart->id . $literal_module . $module_id . $literal_order . $order_id . $literal_key . $secure_key);
+                
             }
         } else {
 			$this->module->logger->error(sprintf('Channel Confirmation -- Cart %s didn\'t match any order.', $cart_id));

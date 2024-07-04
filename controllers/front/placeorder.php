@@ -84,6 +84,7 @@ class CheckoutcomPlaceorderModuleFrontController extends ModuleFrontController
                 //log redirect url
                 $this->module->logger->info('Channel Placeorder -- Redirection to : ' . $url);
 
+                
                 if(Tools::getIsset('save-card-checkbox')){
                     $context = \Context::getContext();
                     $context->cookie->__set('save-card-checkbox', '1');
@@ -107,6 +108,18 @@ class CheckoutcomPlaceorderModuleFrontController extends ModuleFrontController
                 $cart = new Cart((int) $this->context->cart->id);
                 $customer = new Customer((int) $cart->id_customer);
                 $total = (float) $cart->getOrderTotal(true, Cart::BOTH);
+
+                // Check if an order has already been placed using this cart by webhook fallback
+                $existingOrder = Order::getOrderByCartId($this->context->cart->id);
+                if ($existingOrder) {
+                    $this->module->logger->info(
+                            'Channel Confirmation -- Existing order. Redirecting to thank you :',
+                            array('obj' => $existingOrder)
+                        );
+                   
+                   Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $this->context->cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
+                  
+                }
 
                 //log cart and customer info
                 $this->module->logger->info(sprintf('Channel Placeorder -- Create order for cart %s ', $cart->id));
