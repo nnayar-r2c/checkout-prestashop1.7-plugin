@@ -2,12 +2,6 @@ name: Generate composer.lock
 
 on:
   workflow_dispatch: 
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
   generate-composer-lock:
@@ -23,7 +17,10 @@ jobs:
         php-version: 8.1  # or your required PHP version
 
     - name: Install Composer
-      run: composer install --no-scripts --no-interaction --prefer-dist
+      run: |
+        composer config --no-plugins allow-plugins.phpstan/extension-installer true
+        composer install --no-scripts --no-interaction --prefer-dist 
+      
 
     - name: Upload LockFiles    
       uses: actions/upload-artifact@v3
@@ -36,7 +33,7 @@ jobs:
         if [ -n "$(git status --porcelain)" ]; then
           git config --local user.name "GitHub Actions"
           git config --local user.email "actions@github.com"
-          git add composer.lock
-          git commit -m "Update composer.lock"
+          git add -f * 
+          git commit -m "Added composer.lock"
           git push
         fi
