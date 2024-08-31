@@ -1,0 +1,42 @@
+name: Generate composer.lock
+
+on:
+  workflow_dispatch: 
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  generate-composer-lock:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.1  # or your required PHP version
+
+    - name: Install Composer
+      run: composer install --no-scripts --no-interaction --prefer-dist
+
+    - name: Upload LockFiles    
+      uses: actions/upload-artifact@v3
+      with:
+        name: lockfile
+        path: '**/composer.lock'
+
+    - name: Commit composer.lock if it changed
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
+          git add composer.lock
+          git commit -m "Update composer.lock"
+          git push
+        fi
