@@ -15,7 +15,10 @@
     }
   },
   "config": {
-        "prepend-autoloader": false
+        "prepend-autoloader": false,
+    "allow-plugins": {
+      "phpstan/extension-installer": true
+    }
   },
   "license": "MIT"
 }
